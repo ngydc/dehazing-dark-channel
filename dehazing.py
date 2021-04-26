@@ -63,7 +63,9 @@ def recover_radiance(image, atm_light, transmission, t0=0.1):
     bounded_transmission = np.zeros(image.shape)
     temp = np.copy(transmission)
     temp[temp < t0] = t0
+
+    # convert to shape of the image for easier numpy computation
     for i in range(3):
         bounded_transmission[:, :, i] = temp
 
-    return (image - atm_light) / bounded_transmission + atm_light
+    return ((image - atm_light) / bounded_transmission) + atm_light
