@@ -1,5 +1,6 @@
 import numpy as np
 import math
+import guidedfilter
 
 
 def dark_channel(image, window):
@@ -50,6 +51,18 @@ def transmission(image, atm_light, window, omega=0.95):
     return 1 - omega * dark_channel(normalize, window)
 
 
+def refine_transmission(guide, src, radius, eps=1e-3):
+    """
+    refines the given transmission via a guided filter
+    :param guide: is the image which is used as a guidance
+    :param src: is the image to be refined
+    :param radius: is the radius of the window
+    :param eps: regularization term
+    :return: returns the refined transmission
+    """
+    return guidedfilter.filter(guide, src, radius, eps)
+
+
 def recover_radiance(image, atm_light, transmission, t0=0.1):
     """
     recovers the scene radiance (dehazed image) from a hazy input image (EQ 22)
@@ -59,7 +72,6 @@ def recover_radiance(image, atm_light, transmission, t0=0.1):
     :param t0: lower bound of the transmission
     :return: the scene radiance
     """
-
     bounded_transmission = np.zeros(image.shape)
     temp = np.copy(transmission)
     temp[temp < t0] = t0

@@ -24,10 +24,20 @@ def dehaze(img_path):
     transmission_img = Image.fromarray(np.uint8(transmission * 255), 'L')
     transmission_img.save(img_path.replace('.jpg', '_est_transmission.jpg'), format='JPEG')
 
-    # recover the scene radiance
+    # refine the transmission with a guided filter
+    refined_transmission = dehazing.refine_transmission(hazy_img, transmission, 40, 0.001)
+    refined_transmission_img = Image.fromarray(np.uint8(refined_transmission * 255), 'L')
+    refined_transmission_img.save(img_path.replace('.jpg', '_ref_transmission.jpg'), format='JPEG')
+
+    # recover the unrefined scene radiance
     scene_radiance = dehazing.recover_radiance(hazy_img, atm_light, transmission)
     scene_radiance_img = Image.fromarray(np.uint8(scene_radiance), 'RGB')
-    scene_radiance_img.save(img_path.replace('.jpg', '_scene_radiance.jpg'), format='JPEG')
+    scene_radiance_img.save(img_path.replace('.jpg', '_scene_radiance_unref.jpg'), format='JPEG')
+
+    # recover the refined scene radiance
+    ref_radiance = dehazing.recover_radiance(hazy_img, atm_light, refined_transmission)
+    ref_radiance_img = Image.fromarray(np.uint8(ref_radiance), 'RGB')
+    ref_radiance_img.save(img_path.replace('.jpg', '_scene_radiance_ref.jpg'), format='JPEG')
 
 
 if __name__ == '__main__':
